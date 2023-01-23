@@ -1,0 +1,6 @@
+comma-style: trailing
+diff-friendly-import-export: true
+indentation: 4
+indent-wheres: true
+record-brace-space: true
+respectful: true

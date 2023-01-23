@@ -1,0 +1,60 @@
+cabal-version: 3.4
+
+name: unleash-client-haskell
+version: 0.1.0
+description: Please see README.md
+author: FINN.no
+copyright: Copyright © FINN.no AS, Inc. All rights reserved.
+extra-source-files:
+    README.md
+
+common all
+    build-depends:
+        base >=4.7 && <5,
+        record-hasfield
+    default-extensions:
+        BlockArguments
+        DeriveFoldable
+        DeriveFunctor
+        DeriveTraversable
+        DerivingStrategies
+        LambdaCase
+        OverloadedStrings
+        RankNTypes
+        ScopedTypeVariables
+    ghc-options:
+        -O2
+        -W
+        -Wno-unused-top-binds
+        -Wredundant-constraints
+        -Wunused-packages
+        -F -pgmF=record-dot-preprocessor
+    default-language: Haskell2010
+
+common executables
+    ghc-options:
+        -threaded
+        -rtsopts
+        "-with-rtsopts=-N2 -T"
+
+library
+    import: all
+    exposed-modules: Unleash.Client
+    hs-source-dirs: src
+    build-depends:
+        http-client,
+        servant-client,
+        text,
+        time,
+        unleash-client-haskell-core
+
+executable example
+    import: all, executables
+    main-is: Main.hs
+    hs-source-dirs: example
+    build-depends:
+        unleash-client-haskell,
+        async,
+        servant-client,
+        text,
+        unleash-client-haskell-core
