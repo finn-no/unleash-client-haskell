@@ -2,12 +2,12 @@
 
 This is an opinionated Unleash Haskell client that uses `unleash-client-haskell-core`.
 
-`Unleash.Client` exports:
+`Unleash.Client` exports functions and types for:
 
-- A data structure for client configuration.
-- A function for client registration.
-- A function for polling for feature toggles.
-- A function for sending metrics.
+- Client configuration
+- Client registration
+- Fetching feature toggle states
+- Sending metrics
 
 ## Build
 

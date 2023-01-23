@@ -19,10 +19,12 @@
           overlays = [
             (self: super: {
               haskellPackages = super.haskellPackages.override {
-                overrides = self: super: {
-                  unleash-client-haskell-core = pkgs.haskell.lib.dontCheck
-                    unleash-client-haskell-core.defaultPackage.${system}; # TODO: Add overlay to uchc
-                };
+                overrides =
+                  # unleash-client-haskell-core.overlay;
+                  self: super: {
+                    unleash-client-haskell-core = pkgs.haskell.lib.dontCheck
+                      unleash-client-haskell-core.defaultPackage.${system};
+                  };
               };
             })
           ];

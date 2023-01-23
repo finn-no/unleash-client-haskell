@@ -16,7 +16,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void (Void)
 import Servant.Client (BaseUrl (BaseUrl), Scheme (Http))
-import Unleash -- Should avoid or not?
+import Unleash
 import Unleash.Client
 
 unleashServer :: BaseUrl
@@ -41,17 +41,15 @@ application config = do
 
 registerApplication :: Config -> IO ()
 registerApplication config = do
-    response <- registerClient config
-    case response of
+    registerClient config >>= \case
         Left error -> putStrLn $ "Could not register application (" <> show error <> ")"
         Right _ -> putStrLn "Application registered"
 
 statePoller :: Config -> IO Void
 statePoller config = do
     forever do
-        response <- pollState config
-        case response of
-            Left newState -> putStrLn $ "Could not get state (" <> show newState <> ")"
+        pollState config >>= \case
+            Left error -> putStrLn $ "Could not get state (" <> show error <> ")"
             Right _ -> putStrLn "State received"
         threadDelay $ config.statePollIntervalInSeconds * 1000 * 1000
 
@@ -59,7 +57,6 @@ metricsPusher :: Config -> IO Void
 metricsPusher config = do
     forever do
         threadDelay $ config.metricsPushIntervalInSeconds * 1000 * 1000
-        response <- pushMetrics config
-        case response of
+        pushMetrics config >>= \case
             Left error -> putStrLn $ "Could not send metrics (" <> show error <> ")"
             Right _ -> putStrLn "Metrics sent"
