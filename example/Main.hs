@@ -53,12 +53,12 @@ statePoller config = do
         case response of
             Left newState -> putStrLn $ "Could not get state (" <> show newState <> ")"
             Right _ -> putStrLn "State received"
-        threadDelay $ (statePollIntervalInSeconds config) * 1000 * 1000
+        threadDelay $ config.statePollIntervalInSeconds * 1000 * 1000
 
 metricsPusher :: Config -> IO Void
 metricsPusher config = do
     forever do
-        threadDelay $ (metricsPushIntervalInSeconds config) * 1000 * 1000
+        threadDelay $ config.metricsPushIntervalInSeconds * 1000 * 1000
         response <- pushMetrics config
         case response of
             Left error -> putStrLn $ "Could not send metrics (" <> show error <> ")"

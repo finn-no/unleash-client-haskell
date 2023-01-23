@@ -57,17 +57,17 @@ registerClient config = do
     let registrationPayload :: Unleash.RegisterPayload
         registrationPayload =
             Unleash.RegisterPayload
-                { appName = applicationName config,
-                  instanceId = instanceId config,
+                { appName = config.applicationName,
+                  instanceId = config.instanceId,
                   started = now,
-                  intervalSeconds = metricsPushIntervalInSeconds config
+                  intervalSeconds = config.metricsPushIntervalInSeconds
                 }
-    void <$> register (httpClientEnvironment config) Nothing registrationPayload
+    void <$> register config.httpClientEnvironment Nothing registrationPayload
 
 pollState :: Config -> IO (Either ClientError ())
 pollState config = do
-    eitherFeatures <- getAllClientFeatures (httpClientEnvironment config) Nothing
-    either (const $ pure ()) (void . updateState (state config)) eitherFeatures
+    eitherFeatures <- getAllClientFeatures config.httpClientEnvironment Nothing
+    either (const $ pure ()) (void . updateState config.state) eitherFeatures
     pure . void $ eitherFeatures
     where
         updateState state value = do
@@ -77,33 +77,33 @@ pollState config = do
 pushMetrics :: Config -> IO (Either ClientError ())
 pushMetrics config = do
     now <- getCurrentTime
-    lastBucketStart <- swapMVar (metricsBucketStart config) now
-    bucket <- swapMVar (metrics config) mempty
+    lastBucketStart <- swapMVar config.metricsBucketStart now
+    bucket <- swapMVar config.metrics mempty
     let metricsPayload =
             Unleash.MetricsPayload
-                { appName = applicationName config,
-                  instanceId = instanceId config,
+                { appName = config.applicationName,
+                  instanceId = config.instanceId,
                   start = lastBucketStart,
                   stop = now,
                   toggles = bucket
                 }
-    void <$> sendMetrics (httpClientEnvironment config) Nothing metricsPayload
+    void <$> sendMetrics config.httpClientEnvironment Nothing metricsPayload
 
 -- Blocks until first feature toggle set is received
 isEnabled :: Config -> Text -> Unleash.Context -> IO Bool
 isEnabled config feature context = do
-    state <- readMVar (state config)
+    state <- readMVar config.state
     enabled <- Unleash.featureIsEnabled state feature context
-    modifyMVar_ (metrics config) (\info -> pure $ (feature, enabled) : info)
+    modifyMVar_ config.metrics (\info -> pure $ (feature, enabled) : info)
     pure enabled
 
 -- Returns false for all toggles until first toggle set is received
 tryIsEnabled :: Config -> Text -> Unleash.Context -> IO Bool
 tryIsEnabled config feature context = do
-    maybeState <- tryReadMVar (state config)
+    maybeState <- tryReadMVar config.state
     case maybeState of
         Just state -> do
             enabled <- Unleash.featureIsEnabled state feature context
-            modifyMVar_ (metrics config) (\info -> pure $ (feature, enabled) : info)
+            modifyMVar_ config.metrics (\info -> pure $ (feature, enabled) : info)
             pure enabled
         Nothing -> pure False
