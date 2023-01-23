@@ -1,6 +1,6 @@
 # unleash-client-haskell
 
-This is an opinionated Unleash Haskell client that uses `unleash-client-haskell`.
+This is an opinionated Unleash Haskell client that uses `unleash-client-haskell-core`.
 
 `Unleash.Client` exports:
 
