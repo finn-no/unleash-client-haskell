@@ -19,7 +19,7 @@ import Servant.Client (BaseUrl, ClientEnv, ClientError, mkClientEnv)
 import qualified Unleash
 import Unleash.HttpClient (getAllClientFeatures, register, sendMetrics)
 
--- This is a smart constructor that initializes the mutable variables right..
+-- This is a smart constructor that initializes the mutable variables right
 makeConfig :: Text -> Text -> BaseUrl -> IO Config
 makeConfig applicationName instanceId serverUrl = do
     state <- newEmptyMVar
@@ -88,7 +88,7 @@ pushMetrics config = do
                 }
     void <$> sendMetrics config.httpClientEnvironment Nothing metricsPayload
 
--- This function blocks until first feature toggle set is received.
+-- This function blocks until first feature toggle set is received
 isEnabled :: Config -> Text -> Unleash.Context -> IO Bool
 isEnabled config feature context = do
     state <- readMVar config.state
@@ -96,7 +96,7 @@ isEnabled config feature context = do
     modifyMVar_ config.metrics (\info -> pure $ (feature, enabled) : info)
     pure enabled
 
--- This function returns false for all toggles until first toggle set is received.
+-- This function returns false for all toggles until first toggle set is received
 tryIsEnabled :: Config -> Text -> Unleash.Context -> IO Bool
 tryIsEnabled config feature context = do
     maybeState <- tryReadMVar config.state
