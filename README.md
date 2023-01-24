@@ -1,6 +1,6 @@
 # unleash-client-haskell
 
-This is an opinionated Unleash Haskell client that uses `unleash-client-haskell-core`.
+This is an [Unleash](https://www.getunleash.io/) client Haskell library.
 
 `Unleash.Client` exports functions and types for:
 
@@ -8,6 +8,8 @@ This is an opinionated Unleash Haskell client that uses `unleash-client-haskell-
 - Client registration
 - Fetching feature toggle states
 - Sending metrics
+
+Core functionality is provided by [unleash-client-haskell-core](https://github.com/finn-no/unleash-client-haskell-core).
 
 ## Build
 
@@ -27,4 +29,4 @@ nix-build
 - servant-client (BSD-3-Clause)
 - text (BSD-2-Clause)
 - time (BSD-2-Clause)
-- unleash-client-haskell (MIT)
+- unleash-client-haskell-core (MIT)
