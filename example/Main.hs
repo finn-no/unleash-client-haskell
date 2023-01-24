@@ -1,10 +1,9 @@
 -- Copyright © FINN.no AS, Inc. All rights reserved.
 
--- Example application that uses unleash-client-haskell.
---
--- Spawns a state poller thread that updates the feature toggles, a metrics
--- sender thread, and an application that continuously reads a feature toggle.
--- The application will block until the first feature toggle set is received.
+-- Example application that uses unleash-client-haskell. Spawns a state poller
+-- thread that updates the feature toggles, a metrics sender thread, and an
+-- application that continuously reads a feature toggle. The application will
+-- block until the first feature toggle set is received.
 
 module Main where
 

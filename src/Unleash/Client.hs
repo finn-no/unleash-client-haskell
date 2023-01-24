@@ -19,7 +19,8 @@ import Servant.Client (BaseUrl, ClientEnv, ClientError, mkClientEnv)
 import qualified Unleash
 import Unleash.HttpClient (getAllClientFeatures, register, sendMetrics)
 
--- This is a smart constructor that initializes the mutable variables right
+-- Smart constructor for Unleash client configuration
+-- Initializes the mutable variables properly
 makeConfig :: Text -> Text -> BaseUrl -> IO Config
 makeConfig applicationName instanceId serverUrl = do
     state <- newEmptyMVar
@@ -39,6 +40,8 @@ makeConfig applicationName instanceId serverUrl = do
               httpClientEnvironment = clientEnv
             }
 
+-- Unleash client configuration
+-- Use the smart constructor or make sure the mutable metrics variables are not empty
 data Config = Config
     { applicationName :: Text,
       instanceId :: Text,
@@ -50,6 +53,8 @@ data Config = Config
       httpClientEnvironment :: ClientEnv
     }
 
+-- Registers client for the Unleash server
+-- Call this on application startup before calling the state poller and metrics pusher functions
 registerClient :: Config -> IO (Either ClientError ())
 registerClient config = do
     now <- getCurrentTime
@@ -63,6 +68,9 @@ registerClient config = do
                 }
     void <$> register config.httpClientEnvironment Nothing registrationPayload
 
+-- Fetches the most recent feature toggle set from the Unleash server
+-- Meant to be run every statePollIntervalInSeconds
+-- Non-blocking
 pollState :: Config -> IO (Either ClientError ())
 pollState config = do
     eitherFeatures <- getAllClientFeatures config.httpClientEnvironment Nothing
@@ -73,6 +81,9 @@ pollState config = do
             isUpdated <- tryPutMVar state value
             unless isUpdated . void $ swapMVar state value
 
+-- Pushes metrics to the Unleash server
+-- Meant to be run every metricsPushIntervalInSeconds
+-- Blocks if the mutable metrics variables are empty
 pushMetrics :: Config -> IO (Either ClientError ())
 pushMetrics config = do
     now <- getCurrentTime
@@ -88,7 +99,9 @@ pushMetrics config = do
                 }
     void <$> sendMetrics config.httpClientEnvironment Nothing metricsPayload
 
--- This function blocks until first feature toggle set is received
+-- Checks if a feature is enabled or not
+-- Blocks until first feature toggle set is received
+-- Blocks if the mutable metrics variables are empty
 isEnabled :: Config -> Text -> Unleash.Context -> IO Bool
 isEnabled config feature context = do
     state <- readMVar config.state
@@ -96,7 +109,9 @@ isEnabled config feature context = do
     modifyMVar_ config.metrics (\info -> pure $ (feature, enabled) : info)
     pure enabled
 
--- This function returns false for all toggles until first toggle set is received
+-- Checks if a feature is enabled or not
+-- Returns false for all toggles until first toggle set is received
+-- Blocks if the mutable metrics variables are empty
 tryIsEnabled :: Config -> Text -> Unleash.Context -> IO Bool
 tryIsEnabled config feature context = do
     maybeState <- tryReadMVar config.state
