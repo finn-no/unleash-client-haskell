@@ -38,6 +38,7 @@ library
     hs-source-dirs: src
     build-depends:
         http-client,
+        mtl,
         servant-client,
         text,
         time,
@@ -48,8 +49,9 @@ executable example
     main-is: Main.hs
     hs-source-dirs: example
     build-depends:
-        async,
+        mtl,
         servant-client,
         text,
         unleash-client-haskell,
-        unleash-client-haskell-core
+        unleash-client-haskell-core,
+        unliftio

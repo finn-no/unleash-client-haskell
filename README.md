@@ -9,6 +9,8 @@ This is an [Unleash](https://www.getunleash.io/) client Haskell library.
 - Fetching feature toggle states
 - Sending metrics
 
+`unleash-client-haskell` is a (working) work in progress and the API is likely to change.
+
 Core functionality is provided by [unleash-client-haskell-core](https://github.com/finn-no/unleash-client-haskell-core).
 
 ## Build
@@ -24,9 +26,9 @@ nix-build
 
 ## Dependencies
 
-- async (BSD-3-Clause)
 - http-client (MIT)
 - servant-client (BSD-3-Clause)
 - text (BSD-2-Clause)
 - time (BSD-2-Clause)
 - unleash-client-haskell-core (MIT)
+- unliftio (MIT)
