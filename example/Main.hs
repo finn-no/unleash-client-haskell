@@ -27,7 +27,7 @@ featureToggle = "your-feature-toggle"
 
 main :: IO ()
 main = do
-    config <- makeConfig "unleash-client-haskell-example" "localhost" unleashServer
+    config <- makeConfig "unleash-client-haskell-example" "localhost" unleashServer Nothing
     registerApplication config
     let threads = ($ config) <$> [statePoller, metricsPusher, application]
     runConcurrently $ traverse_ Concurrently threads

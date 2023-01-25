@@ -24,8 +24,8 @@ import Unleash.HttpClient (getAllClientFeatures, register, sendMetrics)
 
 -- Smart constructor for Unleash client configuration
 -- Initializes the mutable variables properly
-makeConfig :: MonadIO m => Text -> Text -> BaseUrl -> m Config
-makeConfig applicationName instanceId serverUrl = do
+makeConfig :: MonadIO m => Text -> Text -> BaseUrl -> Maybe Text -> m Config
+makeConfig applicationName instanceId serverUrl apiKey = do
     state <- liftIO newEmptyMVar
     metrics <- liftIO $ newMVar mempty
     metricsBucketStart <- liftIO $ getCurrentTime >>= newMVar
@@ -40,6 +40,7 @@ makeConfig applicationName instanceId serverUrl = do
               metrics = metrics,
               metricsBucketStart = metricsBucketStart,
               metricsPushIntervalInSeconds = 8,
+              apiKey = apiKey,
               httpClientEnvironment = clientEnv
             }
 
@@ -53,6 +54,7 @@ data Config = Config
       metrics :: MVar [(Text, Bool)],
       metricsBucketStart :: MVar UTCTime,
       metricsPushIntervalInSeconds :: Int,
+      apiKey :: Maybe Text,
       httpClientEnvironment :: ClientEnv
     }
 
@@ -69,14 +71,14 @@ registerClient config = do
                   started = now,
                   intervalSeconds = config.metricsPushIntervalInSeconds
                 }
-    void <$> register config.httpClientEnvironment Nothing registrationPayload
+    void <$> register config.httpClientEnvironment config.apiKey registrationPayload
 
 -- Fetches the most recent feature toggle set from the Unleash server
 -- Meant to be run every statePollIntervalInSeconds
 -- Non-blocking
 pollState :: MonadIO m => Config -> m (Either ClientError ())
 pollState config = do
-    eitherFeatures <- getAllClientFeatures config.httpClientEnvironment Nothing
+    eitherFeatures <- getAllClientFeatures config.httpClientEnvironment config.apiKey
     either (const $ pure ()) (void . updateState config.state) eitherFeatures
     pure . void $ eitherFeatures
     where
@@ -100,7 +102,7 @@ pushMetrics config = do
                   stop = now,
                   toggles = bucket
                 }
-    void <$> sendMetrics config.httpClientEnvironment Nothing metricsPayload
+    void <$> sendMetrics config.httpClientEnvironment config.apiKey metricsPayload
 
 -- Checks if a feature is enabled or not
 -- Blocks until first feature toggle set is received
