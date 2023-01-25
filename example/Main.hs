@@ -8,16 +8,26 @@
 module Main where
 
 import Control.Concurrent (threadDelay)
-import Control.Concurrent.Async (Concurrently (Concurrently, runConcurrently))
 import Control.Monad (forever)
+import Control.Monad.Reader (ReaderT (runReaderT))
+import Control.Monad.Reader.Class (asks)
 import Data.Foldable (traverse_)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void (Void)
 import Servant.Client (BaseUrl (BaseUrl), Scheme (Http))
 import System.Exit (die)
-import Unleash
-import Unleash.Client
+import Unleash (emptyContext)
+import Unleash.Client (
+    HasUnleash (..),
+    UnleashConfig (..),
+    isEnabled,
+    makeUnleashConfig,
+    pollToggles,
+    pushMetrics,
+    registerClient,
+ )
+import UnliftIO
 
 unleashServer :: BaseUrl
 unleashServer = BaseUrl Http "your-unleash-server" 80 mempty
@@ -25,38 +35,54 @@ unleashServer = BaseUrl Http "your-unleash-server" 80 mempty
 featureToggle :: Text
 featureToggle = "your-feature-toggle"
 
+type Program a = ReaderT AppConfig IO a
+
+data AppConfig = AppConfig {unleashConfig :: UnleashConfig}
+
+instance HasUnleash AppConfig where
+    getUnleashConfig = unleashConfig
+
 main :: IO ()
 main = do
-    config <- makeConfig "unleash-client-haskell-example" "localhost" unleashServer Nothing
-    registerApplication config
-    let threads = ($ config) <$> [statePoller, metricsPusher, application]
+    config <- makeUnleashConfig "unleash-client-haskell-example" "localhost" unleashServer Nothing
+    runReaderT program (AppConfig config)
+
+program :: Program ()
+program = do
+    registerApplication
+    let threads = [statePoller, metricsPusher, application]
     runConcurrently $ traverse_ Concurrently threads
 
-application :: Config -> IO Void
-application config = do
+application :: Program Void
+application =
     forever do
-        enabled <- isEnabled config featureToggle emptyContext
-        putStrLn $ T.unpack featureToggle <> " is " <> (if enabled then "enabled" else "disabled")
-        threadDelay $ 2 * 1000 * 1000
+        enabled <- isEnabled featureToggle emptyContext
+        liftIO . putStrLn $ T.unpack featureToggle <> " is " <> (if enabled then "enabled" else "disabled")
+        liftIO . threadDelay $ 2 * 1000 * 1000
 
-registerApplication :: Config -> IO ()
-registerApplication config = do
-    registerClient config >>= \case
-        Left error -> die $ "Could not register application (" <> show error <> ")"
-        Right _ -> putStrLn "Application registered"
+registerApplication :: Program ()
+registerApplication = do
+    registerClient
+        >>= liftIO . \case
+            Left error -> die $ "Could not register application (" <> show error <> ")"
+            Right _ -> putStrLn "Application registered"
 
-statePoller :: Config -> IO Void
-statePoller config = do
+statePoller :: Program Void
+statePoller = do
+    config <- asks getUnleashConfig
     forever do
-        pollState config >>= \case
-            Left error -> putStrLn $ "Could not get state (" <> show error <> ")"
-            Right _ -> putStrLn "State received"
-        threadDelay $ config.statePollIntervalInSeconds * 1000 * 1000
+        pollToggles
+            >>= liftIO . \case
+                Left error -> putStrLn $ "Could not get state (" <> show error <> ")"
+                Right _ -> putStrLn "State received"
+        liftIO . threadDelay $ config.statePollIntervalInSeconds * 1000 * 1000
 
-metricsPusher :: Config -> IO Void
-metricsPusher config = do
+metricsPusher :: Program Void
+metricsPusher = do
+    config <- asks getUnleashConfig
     forever do
-        threadDelay $ config.metricsPushIntervalInSeconds * 1000 * 1000
-        pushMetrics config >>= \case
-            Left error -> putStrLn $ "Could not send metrics (" <> show error <> ")"
-            Right _ -> putStrLn "Metrics sent"
+        liftIO . threadDelay $ config.metricsPushIntervalInSeconds * 1000 * 1000
+        pushMetrics
+            >>= liftIO . \case
+                Left error -> putStrLn $ "Could not send metrics (" <> show error <> ")"
+                Right _ -> putStrLn "Metrics sent"
