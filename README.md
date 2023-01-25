@@ -2,7 +2,7 @@
 
 This is an [Unleash](https://www.getunleash.io/) client Haskell library.
 
-`Unleash.Client` exports functions and types for:
+`Unleash.Client` provides functions and types for:
 
 - Client configuration
 - Client registration
