@@ -69,20 +69,20 @@ registerClient config = do
                   started = now,
                   intervalSeconds = config.metricsPushIntervalInSeconds
                 }
-    liftIO $ void <$> register config.httpClientEnvironment Nothing registrationPayload
+    void <$> register config.httpClientEnvironment Nothing registrationPayload
 
 -- Fetches the most recent feature toggle set from the Unleash server
 -- Meant to be run every statePollIntervalInSeconds
 -- Non-blocking
 pollState :: MonadIO m => Config -> m (Either ClientError ())
 pollState config = do
-    eitherFeatures <- liftIO $ getAllClientFeatures config.httpClientEnvironment Nothing
+    eitherFeatures <- getAllClientFeatures config.httpClientEnvironment Nothing
     either (const $ pure ()) (void . updateState config.state) eitherFeatures
     pure . void $ eitherFeatures
     where
         updateState state value = do
             isUpdated <- liftIO $ tryPutMVar state value
-            liftIO $ unless isUpdated . void $ swapMVar state value
+            liftIO . unless isUpdated . void $ swapMVar state value
 
 -- Pushes metrics to the Unleash server
 -- Meant to be run every metricsPushIntervalInSeconds
@@ -100,7 +100,7 @@ pushMetrics config = do
                   stop = now,
                   toggles = bucket
                 }
-    liftIO $ void <$> sendMetrics config.httpClientEnvironment Nothing metricsPayload
+    void <$> sendMetrics config.httpClientEnvironment Nothing metricsPayload
 
 -- Checks if a feature is enabled or not
 -- Blocks until first feature toggle set is received
