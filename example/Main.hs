@@ -15,6 +15,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void (Void)
 import Servant.Client (BaseUrl (BaseUrl), Scheme (Http))
+import System.Exit (die)
 import Unleash
 import Unleash.Client
 
@@ -41,7 +42,7 @@ application config = do
 registerApplication :: Config -> IO ()
 registerApplication config = do
     registerClient config >>= \case
-        Left error -> putStrLn $ "Could not register application (" <> show error <> ")"
+        Left error -> die $ "Could not register application (" <> show error <> ")"
         Right _ -> putStrLn "Application registered"
 
 statePoller :: Config -> IO Void
