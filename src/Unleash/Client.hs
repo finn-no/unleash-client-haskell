@@ -8,10 +8,13 @@ module Unleash.Client (
     pushMetrics,
     isEnabled,
     tryIsEnabled,
+    getVariant,
+    tryGetVariant
 ) where
 
 import Control.Concurrent.MVar
 import Control.Monad (unless, void)
+import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.Text (Text)
 import Data.Time (UTCTime, getCurrentTime)
 import Network.HTTP.Client (defaultManagerSettings, newManager)
@@ -21,12 +24,12 @@ import Unleash.HttpClient (getAllClientFeatures, register, sendMetrics)
 
 -- Smart constructor for Unleash client configuration
 -- Initializes the mutable variables properly
-makeConfig :: Text -> Text -> BaseUrl -> IO Config
+makeConfig :: MonadIO m => Text -> Text -> BaseUrl -> m Config
 makeConfig applicationName instanceId serverUrl = do
-    state <- newEmptyMVar
-    metrics <- newMVar mempty
-    metricsBucketStart <- getCurrentTime >>= newMVar
-    manager <- newManager defaultManagerSettings
+    state <- liftIO newEmptyMVar
+    metrics <- liftIO $ newMVar mempty
+    metricsBucketStart <- liftIO $ getCurrentTime >>= newMVar
+    manager <- liftIO $ newManager defaultManagerSettings
     let clientEnv = mkClientEnv manager serverUrl
     pure $
         Config
@@ -55,9 +58,9 @@ data Config = Config
 
 -- Registers client for the Unleash server
 -- Call this on application startup before calling the state poller and metrics pusher functions
-registerClient :: Config -> IO (Either ClientError ())
+registerClient :: MonadIO m => Config -> m (Either ClientError ())
 registerClient config = do
-    now <- getCurrentTime
+    now <- liftIO getCurrentTime
     let registrationPayload :: Unleash.RegisterPayload
         registrationPayload =
             Unleash.RegisterPayload
@@ -66,29 +69,29 @@ registerClient config = do
                   started = now,
                   intervalSeconds = config.metricsPushIntervalInSeconds
                 }
-    void <$> register config.httpClientEnvironment Nothing registrationPayload
+    liftIO $ void <$> register config.httpClientEnvironment Nothing registrationPayload
 
 -- Fetches the most recent feature toggle set from the Unleash server
 -- Meant to be run every statePollIntervalInSeconds
 -- Non-blocking
-pollState :: Config -> IO (Either ClientError ())
+pollState :: MonadIO m => Config -> m (Either ClientError ())
 pollState config = do
-    eitherFeatures <- getAllClientFeatures config.httpClientEnvironment Nothing
+    eitherFeatures <- liftIO $ getAllClientFeatures config.httpClientEnvironment Nothing
     either (const $ pure ()) (void . updateState config.state) eitherFeatures
     pure . void $ eitherFeatures
     where
         updateState state value = do
-            isUpdated <- tryPutMVar state value
-            unless isUpdated . void $ swapMVar state value
+            isUpdated <- liftIO $ tryPutMVar state value
+            liftIO $ unless isUpdated . void $ swapMVar state value
 
 -- Pushes metrics to the Unleash server
 -- Meant to be run every metricsPushIntervalInSeconds
 -- Blocks if the mutable metrics variables are empty
-pushMetrics :: Config -> IO (Either ClientError ())
+pushMetrics :: MonadIO m => Config -> m (Either ClientError ())
 pushMetrics config = do
-    now <- getCurrentTime
-    lastBucketStart <- swapMVar config.metricsBucketStart now
-    bucket <- swapMVar config.metrics mempty
+    now <- liftIO getCurrentTime
+    lastBucketStart <- liftIO $ swapMVar config.metricsBucketStart now
+    bucket <- liftIO $ swapMVar config.metrics mempty
     let metricsPayload =
             Unleash.MetricsPayload
                 { appName = config.applicationName,
@@ -97,27 +100,44 @@ pushMetrics config = do
                   stop = now,
                   toggles = bucket
                 }
-    void <$> sendMetrics config.httpClientEnvironment Nothing metricsPayload
+    liftIO $ void <$> sendMetrics config.httpClientEnvironment Nothing metricsPayload
 
 -- Checks if a feature is enabled or not
 -- Blocks until first feature toggle set is received
 -- Blocks if the mutable metrics variables are empty
-isEnabled :: Config -> Text -> Unleash.Context -> IO Bool
+isEnabled :: MonadIO m => Config -> Text -> Unleash.Context -> m Bool
 isEnabled config feature context = do
-    state <- readMVar config.state
+    state <- liftIO . readMVar $ config.state
     enabled <- Unleash.featureIsEnabled state feature context
-    modifyMVar_ config.metrics (\info -> pure $ (feature, enabled) : info)
+    liftIO $ modifyMVar_ config.metrics (\info -> pure $ (feature, enabled) : info)
     pure enabled
 
 -- Checks if a feature is enabled or not
 -- Returns false for all toggles until first toggle set is received
 -- Blocks if the mutable metrics variables are empty
-tryIsEnabled :: Config -> Text -> Unleash.Context -> IO Bool
+tryIsEnabled :: MonadIO m => Config -> Text -> Unleash.Context -> m Bool
 tryIsEnabled config feature context = do
-    maybeState <- tryReadMVar config.state
+    maybeState <- liftIO . tryReadMVar $ config.state
     case maybeState of
         Just state -> do
             enabled <- Unleash.featureIsEnabled state feature context
-            modifyMVar_ config.metrics (\info -> pure $ (feature, enabled) : info)
+            liftIO $ modifyMVar_ config.metrics (\info -> pure $ (feature, enabled) : info)
             pure enabled
         Nothing -> pure False
+
+-- Gets a variant
+-- Blocks until first feature toggle set is received
+getVariant :: MonadIO m => Config -> Text -> Unleash.Context -> m Unleash.VariantResponse
+getVariant config feature context = do
+    state <- liftIO . readMVar $ config.state
+    Unleash.featureGetVariant state feature context
+
+-- Gets a variant
+-- Returns an empty variant until first toggle set is received
+tryGetVariant :: MonadIO m => Config -> Text -> Unleash.Context -> m Unleash.VariantResponse
+tryGetVariant config feature context = do
+    maybeState <- liftIO . tryReadMVar $ config.state
+    case maybeState of
+        Just state -> do
+            Unleash.featureGetVariant state feature context
+        Nothing -> pure Unleash.emptyVariantResponse
