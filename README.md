@@ -30,7 +30,7 @@ nix-build
 
 - aeson (BSD-3-Clause)
 - containers (BSD-3-Clause)
-- http-client (MIT)
+- http-client-tls (MIT)
 - http-media (MIT)
 - servant (BSD-3-Clause)
 - servant-client (BSD-3-Clause)
