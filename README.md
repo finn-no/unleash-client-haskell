@@ -9,6 +9,8 @@ This is an [Unleash](https://www.getunleash.io/) client Haskell library.
 - Fetching feature toggle states
 - Sending metrics
 
+There's also an [example](example/Main.hs) of how these can be used in an application.
+
 `unleash-client-haskell` is a (working) work in progress and the API is likely to change.
 
 Core functionality is provided by [unleash-client-haskell-core](https://github.com/finn-no/unleash-client-haskell-core).
