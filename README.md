@@ -28,7 +28,11 @@ nix-build
 
 ## Dependencies
 
+- aeson (BSD-3-Clause)
+- containers (BSD-3-Clause)
 - http-client (MIT)
+- http-media (MIT)
+- servant (BSD-3-Clause)
 - servant-client (BSD-3-Clause)
 - text (BSD-2-Clause)
 - time (BSD-2-Clause)

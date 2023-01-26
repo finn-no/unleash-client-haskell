@@ -34,15 +34,23 @@ common all
 
 library
     import: all
-    exposed-modules: Unleash.Client
+    exposed-modules:
+        Unleash.Client,
+    other-modules:
+        Unleash.Internal.HttpClient
+        Paths_unleash_client_haskell
     hs-source-dirs: src
     build-depends:
+        aeson,
+        containers,
         http-client-tls,
+        http-media,
         mtl,
+        servant,
         servant-client,
         text,
         time,
-        unleash-client-haskell-core
+        unleash-client-haskell-core,
 
 executable example
     import: all
