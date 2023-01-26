@@ -32,6 +32,9 @@ import UnliftIO
 unleashServer :: BaseUrl
 unleashServer = BaseUrl Http "your-unleash-server" 80 mempty
 
+secretKey :: Maybe Text
+secretKey = Nothing
+
 featureToggle :: Text
 featureToggle = "your-feature-toggle"
 
@@ -44,7 +47,7 @@ instance HasUnleash AppConfig where
 
 main :: IO ()
 main = do
-    config <- makeUnleashConfig "unleash-client-haskell-example" "localhost" unleashServer Nothing
+    config <- makeUnleashConfig "unleash-client-haskell-example" "localhost" unleashServer secretKey
     runReaderT program (AppConfig config)
 
 program :: Program ()
