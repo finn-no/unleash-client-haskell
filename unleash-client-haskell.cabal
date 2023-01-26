@@ -37,7 +37,7 @@ library
     exposed-modules: Unleash.Client
     hs-source-dirs: src
     build-depends:
-        http-client,
+        http-client-tls,
         mtl,
         servant-client,
         text,
