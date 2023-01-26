@@ -2,8 +2,8 @@
 
 module Unleash.Internal.HttpClient (
     getAllClientFeatures,
-    sendMetrics,
     register,
+    sendMetrics,
 ) where
 
 import Control.Monad.IO.Class (MonadIO, liftIO)
@@ -22,8 +22,17 @@ import Unleash.Internal.DomainTypes (Features, fromJsonFeatures, supportedStrate
 import Unleash.Internal.JsonTypes (FullMetricBucket (..), FullMetricsPayload (..), FullRegisterPayload (..), MetricsPayload, RegisterPayload, YesAndNoes (..))
 import qualified Unleash.Internal.JsonTypes as UJT
 
+type Register = "api" :> "client" :> "register" :> Header "Authorization" Text :> Header "Content-Type" Text :> ReqBody '[CustomJSON] FullRegisterPayload :> PostNoContent
+type GetAllClientFeatures = "api" :> "client" :> "features" :> Header "Authorization" Text :> Get '[JSON] UJT.Features
+type SendMetrics = "api" :> "client" :> "metrics" :> Header "Authorization" Text :> ReqBody '[CustomJSON] FullMetricsPayload :> PostNoContent
+type Api = GetAllClientFeatures :<|> SendMetrics :<|> Register
+
+getAllClientFeatures' :<|> sendMetrics' :<|> register' = client api
+
 api :: Proxy Api
 api = Proxy
+
+type ApiKey = Text
 
 data CustomJSON = CustomJSON
 
@@ -36,19 +45,23 @@ instance Accept CustomJSON where
 instance {-# OVERLAPPABLE #-} ToJSON a => MimeRender CustomJSON a where
     mimeRender _ = encode
 
-type Api = GetAllClientFeatures :<|> SendMetrics :<|> Register
-type GetAllClientFeatures = "api" :> "client" :> "features" :> Header "Authorization" Text :> Get '[JSON] UJT.Features
-type SendMetrics = "api" :> "client" :> "metrics" :> Header "Authorization" Text :> ReqBody '[CustomJSON] FullMetricsPayload :> PostNoContent
-type Register = "api" :> "client" :> "register" :> Header "Authorization" Text :> Header "Content-Type" Text :> ReqBody '[CustomJSON] FullRegisterPayload :> PostNoContent
-
-getAllClientFeatures' :<|> sendMetrics' :<|> register' = client api
-
-type ApiKey = Text
+register :: MonadIO m => ClientEnv -> Maybe ApiKey -> RegisterPayload -> m (Either ClientError NoContent)
+register clientEnv apiKey registerPayload = do
+    let fullRegisterPayload =
+            FullRegisterPayload
+                { appName = registerPayload.appName,
+                  instanceId = registerPayload.instanceId,
+                  sdkVersion = "unleash-client-haskell:" <> (T.pack . showVersion) version,
+                  strategies = supportedStrategies,
+                  started = registerPayload.started,
+                  interval = registerPayload.intervalSeconds * 1000
+                }
+    liftIO $ runClientM (register' apiKey (Just "application/json") fullRegisterPayload) clientEnv
 
 getAllClientFeatures :: MonadIO m => ClientEnv -> Maybe ApiKey -> m (Either ClientError Features)
 getAllClientFeatures clientEnv apiKey = do
-    eState <- liftIO $ runClientM (getAllClientFeatures' apiKey) clientEnv
-    pure $ fromJsonFeatures <$> eState
+    eitherFeatures <- liftIO $ runClientM (getAllClientFeatures' apiKey) clientEnv
+    pure $ fromJsonFeatures <$> eitherFeatures
 
 sendMetrics :: MonadIO m => ClientEnv -> Maybe ApiKey -> MetricsPayload -> m (Either ClientError NoContent)
 sendMetrics clientEnv apiKey metricsPayload = do
@@ -63,32 +76,16 @@ sendMetrics clientEnv apiKey metricsPayload = do
                     FullMetricBucket
                         { start = metricsPayload.start,
                           stop = metricsPayload.stop,
-                          toggles = createMapOfYesAndNoes metricsPayload.toggles
+                          toggles = makeMapOfYesAndNoes metricsPayload.toggles
                         }
                 }
-
-        createMapOfYesAndNoes :: [(Text, Bool)] -> Map Text YesAndNoes
-        createMapOfYesAndNoes input = do
-            let input' :: [(Text, [Bool])] = (\(k, v) -> (k, [v])) <$> input
-            let map :: (Map Text [Bool]) = fromListWith (++) input'
-
-            boolsToYesNo <$> map
-
-        boolsToYesNo :: [Bool] -> YesAndNoes
-        boolsToYesNo bools = do
+        makeMapOfYesAndNoes :: [(Text, Bool)] -> Map Text YesAndNoes
+        makeMapOfYesAndNoes tuples = do
+            let withSingletonLists :: [(Text, [Bool])] = (\(k, v) -> (k, [v])) <$> tuples
+            let asMap :: (Map Text [Bool]) = fromListWith (++) withSingletonLists
+            boolsToYesAndNoes <$> asMap
+        boolsToYesAndNoes :: [Bool] -> YesAndNoes
+        boolsToYesAndNoes bools = do
             let yes = length $ filter id bools
             let no = length bools - yes
             YesAndNoes yes no
-
-register :: MonadIO m => ClientEnv -> Maybe ApiKey -> RegisterPayload -> m (Either ClientError NoContent)
-register clientEnv apiKey registerPayload = do
-    let fullRegisterPayload =
-            FullRegisterPayload
-                { appName = registerPayload.appName,
-                  instanceId = registerPayload.instanceId,
-                  sdkVersion = "unleash-client-haskell-core:" <> (T.pack . showVersion) version,
-                  strategies = supportedStrategies,
-                  started = registerPayload.started,
-                  interval = registerPayload.intervalSeconds * 1000
-                }
-    liftIO $ runClientM (register' apiKey (Just "application/json") fullRegisterPayload) clientEnv
