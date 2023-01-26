@@ -22,7 +22,7 @@ import Data.Time (UTCTime, getCurrentTime)
 import Network.HTTP.Client.TLS (newTlsManager)
 import Servant.Client (BaseUrl, ClientEnv, ClientError, mkClientEnv)
 import Unleash (Context, Features, MetricsPayload (..), RegisterPayload (..), VariantResponse, emptyVariantResponse, featureGetVariant, featureIsEnabled)
-import Unleash.HttpClient (getAllClientFeatures, register, sendMetrics)
+import Unleash.Internal.HttpClient (getAllClientFeatures, register, sendMetrics)
 
 -- Smart constructor for Unleash client configuration
 -- Initializes the mutable variables properly

@@ -8,7 +8,7 @@
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     unleash-client-haskell-core.url =
-      "github:finn-no/unleash-client-haskell-core?ref=0.7.0";
+      "github:finn-no/unleash-client-haskell-core?ref=0.8.0";
   };
   outputs =
     { self, nixpkgs, flake-compat, flake-utils, unleash-client-haskell-core }:
@@ -19,11 +19,10 @@
           overlays = [
             (self: super: {
               haskellPackages = super.haskellPackages.override {
-                overrides =
-                  self: super: {
-                    unleash-client-haskell-core = pkgs.haskell.lib.dontCheck
-                      unleash-client-haskell-core.defaultPackage.${system};
-                  };
+                overrides = self: super: {
+                  unleash-client-haskell-core = pkgs.haskell.lib.dontCheck
+                    unleash-client-haskell-core.defaultPackage.${system};
+                };
               };
             })
           ];
