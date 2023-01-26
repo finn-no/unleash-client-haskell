@@ -19,7 +19,7 @@ import Control.Monad.IO.Class (MonadIO (liftIO))
 import Control.Monad.Reader (MonadReader, asks)
 import Data.Text (Text)
 import Data.Time (UTCTime, getCurrentTime)
-import Network.HTTP.Client (defaultManagerSettings, newManager)
+import Network.HTTP.Client.TLS (newTlsManager)
 import Servant.Client (BaseUrl, ClientEnv, ClientError, mkClientEnv)
 import Unleash (Context, Features, MetricsPayload (..), RegisterPayload (..), VariantResponse, emptyVariantResponse, featureGetVariant, featureIsEnabled)
 import Unleash.HttpClient (getAllClientFeatures, register, sendMetrics)
@@ -31,7 +31,7 @@ makeUnleashConfig applicationName instanceId serverUrl apiKey = do
     state <- liftIO newEmptyMVar
     metrics <- liftIO $ newMVar mempty
     metricsBucketStart <- liftIO $ getCurrentTime >>= newMVar
-    manager <- liftIO $ newManager defaultManagerSettings
+    manager <- newTlsManager
     let clientEnv = mkClientEnv manager serverUrl
     pure $
         UnleashConfig
