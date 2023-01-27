@@ -14,7 +14,7 @@ You'll need to spawn threads and handle errors yourself. This is shown in the [e
 
 `unleash-client-haskell` is a (working) work in progress and the API is likely to change.
 
-See [unleash-client-haskell-core](https://github.com/finn-no/unleash-client-haskell-core) for a feature toggle evaluation library.
+See [unleash-client-haskell-core](https://github.com/finn-no/unleash-client-haskell-core) for a bare-bones feature toggle evaluation library.
 
 ## Build
 
