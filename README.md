@@ -1,19 +1,20 @@
 # unleash-client-haskell
 
-This is an [Unleash](https://www.getunleash.io/) client Haskell library.
+This is an [Unleash](https://www.getunleash.io/) client SDK Haskell library.
 
 `Unleash.Client` provides functions and types for:
 
 - Client configuration
 - Client registration
-- Fetching feature toggle states
+- Fetching feature toggles
+- Fetching variants
 - Sending metrics
 
-There's also an [example](example/Main.hs) of how these can be used in an application.
+See the [example application](example/Main.hs) to get an idea of how these can be used.
 
 `unleash-client-haskell` is a (working) work in progress and the API is likely to change.
 
-Core functionality is provided by [unleash-client-haskell-core](https://github.com/finn-no/unleash-client-haskell-core).
+See [unleash-client-haskell-core](https://github.com/finn-no/unleash-client-haskell-core) for a bare-bones feature toggle evaluation library.
 
 ## Build
 
