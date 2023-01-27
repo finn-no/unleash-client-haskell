@@ -1,6 +1,6 @@
 # unleash-client-haskell
 
-This is an [Unleash](https://www.getunleash.io/) client SDK Haskell.
+This is an [Unleash](https://www.getunleash.io/) client SDK for Haskell.
 
 `Unleash.Client` provides functions and types for:
 
