@@ -11,6 +11,10 @@ module Unleash.Client (
     tryIsEnabled,
     getVariant,
     tryGetVariant,
+    -- Re-exports
+    Context (..),
+    emptyContext,
+    VariantResponse,
 ) where
 
 import Control.Concurrent.MVar
@@ -21,7 +25,7 @@ import Data.Text (Text)
 import Data.Time (UTCTime, getCurrentTime)
 import Network.HTTP.Client.TLS (newTlsManager)
 import Servant.Client (BaseUrl, ClientEnv, ClientError, mkClientEnv)
-import Unleash (Context, Features, MetricsPayload (..), RegisterPayload (..), VariantResponse, emptyVariantResponse, featureGetVariant, featureIsEnabled)
+import Unleash (Context (..), Features, MetricsPayload (..), RegisterPayload (..), VariantResponse, emptyContext, emptyVariantResponse, featureGetVariant, featureIsEnabled)
 import Unleash.Internal.HttpClient (getAllClientFeatures, register, sendMetrics)
 
 -- Smart constructor for Unleash client configuration
