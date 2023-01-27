@@ -2,7 +2,7 @@
 
 This is an [Unleash](https://www.getunleash.io/) client SDK for Haskell.
 
-`Unleash.Client` provides functions and types for:
+`Unleash.Client` provides a stateful HTTP client with functions and types for:
 
 - Client configuration
 - Client registration
@@ -10,7 +10,7 @@ This is an [Unleash](https://www.getunleash.io/) client SDK for Haskell.
 - Fetching variants
 - Sending metrics
 
-See the [example application](example/Main.hs) to get an idea of how these can be used.
+You'll need to spawn threads and handle errors yourself. This is shown in the [example application](example/Main.hs).
 
 `unleash-client-haskell` is a (working) work in progress and the API is likely to change.
 
