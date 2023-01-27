@@ -10,7 +10,7 @@ This is an [Unleash](https://www.getunleash.io/) client SDK for Haskell.
 - Fetching variants
 - Sending metrics
 
-You'll need to spawn threads and handle errors yourself. This is shown in the [example application](example/Main.hs).
+You'll need to spawn threads and handle errors yourself. This is demonstrated in the [example application](example/Main.hs).
 
 `unleash-client-haskell` is a (working) work in progress and the API is likely to change.
 
