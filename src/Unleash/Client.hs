@@ -1,5 +1,13 @@
--- Copyright © FINN.no AS, Inc. All rights reserved.
+{- |
+Module      : Unleash.Client
+Copyright   : Copyright © FINN.no AS, Inc. All rights reserved.
+License     : MIT
+Stability   : experimental
 
+Functions and types that constitute an Unleash client SDK.
+
+This module re-exports select constructors from [unleash-client-haskell-core](https://github.com/finn-no/unleash-client-haskell-core).
+-}
 module Unleash.Client (
     makeUnleashConfig,
     UnleashConfig (..),
@@ -28,9 +36,19 @@ import Servant.Client (BaseUrl, ClientEnv, ClientError, mkClientEnv)
 import Unleash (Context (..), Features, MetricsPayload (..), RegisterPayload (..), VariantResponse, emptyContext, emptyVariantResponse, featureGetVariant, featureIsEnabled)
 import Unleash.Internal.HttpClient (getAllClientFeatures, register, sendMetrics)
 
--- Smart constructor for Unleash client configuration
--- Initializes the mutable variables properly
-makeUnleashConfig :: MonadIO m => Text -> Text -> BaseUrl -> Maybe Text -> m UnleashConfig
+-- | Smart constructor for Unleash client configuration. Initializes the mutable variables properly.
+makeUnleashConfig ::
+    MonadIO m =>
+    -- | Application name.
+    Text ->
+    -- | Instance identifier.
+    Text ->
+    -- | Unleash server base URL.
+    BaseUrl ->
+    -- | API key for authorization.
+    Maybe Text ->
+    -- | Configuration instance.
+    m UnleashConfig
 makeUnleashConfig applicationName instanceId serverUrl apiKey = do
     state <- liftIO newEmptyMVar
     metrics <- liftIO $ newMVar mempty
@@ -50,27 +68,33 @@ makeUnleashConfig applicationName instanceId serverUrl apiKey = do
               httpClientEnvironment = clientEnv
             }
 
--- Unleash client configuration
--- Use the smart constructor or make sure the mutable metrics variables are not empty
+-- | Unleash client configuration. Use the smart constructor or make sure the mutable metrics variables are not empty.
 data UnleashConfig = UnleashConfig
-    { applicationName :: Text,
+    { -- | Application name.
+      applicationName :: Text,
+      -- | Instance identifier.
       instanceId :: Text,
+      -- | Full client feature set state.
       state :: MVar Features,
+      -- | Feature set state update interval.
       statePollIntervalInSeconds :: Int,
+      -- | Collected metrics state.
       metrics :: MVar [(Text, Bool)],
+      -- | Current metrics bucket start time.
       metricsBucketStart :: MVar UTCTime,
+      -- | Metrics sending interval.
       metricsPushIntervalInSeconds :: Int,
+      -- | API key for authorization.
       apiKey :: Maybe Text,
+      -- | HTTP client environment.
       httpClientEnvironment :: ClientEnv
     }
 
--- Reader monad convenience class
--- Use this to get an Unleash config from inside of an application config (for example)
+-- | Reader monad convenience class. Use this to get an Unleash configuration from inside of an application configuration (for example).
 class HasUnleash r where
     getUnleashConfig :: r -> UnleashConfig
 
--- Registers client for the Unleash server
--- Call this on application startup before calling the state poller and metrics pusher functions
+-- | Register client for the Unleash server. Call this on application startup before calling the state poller and metrics pusher functions.
 registerClient :: (HasUnleash r, MonadReader r m, MonadIO m) => m (Either ClientError ())
 registerClient = do
     config <- asks getUnleashConfig
@@ -85,9 +109,7 @@ registerClient = do
                 }
     void <$> register config.httpClientEnvironment config.apiKey registrationPayload
 
--- Fetches the most recent feature toggle set from the Unleash server
--- Meant to be run every statePollIntervalInSeconds
--- Non-blocking
+-- | Fetch the most recent feature toggle set from the Unleash server. Meant to be run every statePollIntervalInSeconds. Non-blocking.
 pollToggles :: (HasUnleash r, MonadReader r m, MonadIO m) => m (Either ClientError ())
 pollToggles = do
     config <- asks getUnleashConfig
@@ -99,9 +121,7 @@ pollToggles = do
             isUpdated <- liftIO $ tryPutMVar state value
             liftIO . unless isUpdated . void $ swapMVar state value
 
--- Pushes metrics to the Unleash server
--- Meant to be run every metricsPushIntervalInSeconds
--- Blocks if the mutable metrics variables are empty
+-- | Push metrics to the Unleash server. Meant to be run every metricsPushIntervalInSeconds. Blocks if the mutable metrics variables are empty.
 pushMetrics :: (HasUnleash r, MonadReader r m, MonadIO m) => m (Either ClientError ())
 pushMetrics = do
     config <- asks getUnleashConfig
@@ -118,10 +138,15 @@ pushMetrics = do
                 }
     void <$> sendMetrics config.httpClientEnvironment config.apiKey metricsPayload
 
--- Checks if a feature is enabled or not
--- Blocks until first feature toggle set is received
--- Blocks if the mutable metrics variables are empty
-isEnabled :: (HasUnleash r, MonadReader r m, MonadIO m) => Text -> Context -> m Bool
+-- | Check if a feature is enabled or not. Blocks until first feature toggle set is received. Blocks if the mutable metrics variables are empty.
+isEnabled ::
+    (HasUnleash r, MonadReader r m, MonadIO m) =>
+    -- | Feature toggle name.
+    Text ->
+    -- | Client context.
+    Context ->
+    -- | Whether or not the feature toggle is enabled.
+    m Bool
 isEnabled feature context = do
     config <- asks getUnleashConfig
     state <- liftIO . readMVar $ config.state
@@ -129,10 +154,15 @@ isEnabled feature context = do
     liftIO $ modifyMVar_ config.metrics (\info -> pure $ (feature, enabled) : info)
     pure enabled
 
--- Checks if a feature is enabled or not
--- Returns false for all toggles until first toggle set is received
--- Blocks if the mutable metrics variables are empty
-tryIsEnabled :: (HasUnleash r, MonadReader r m, MonadIO m) => Text -> Context -> m Bool
+-- | Check if a feature is enabled or not. Returns false for all toggles until first toggle set is received. Blocks if the mutable metrics variables are empty.
+tryIsEnabled ::
+    (HasUnleash r, MonadReader r m, MonadIO m) =>
+    -- | Feature toggle name.
+    Text ->
+    -- | Client context.
+    Context ->
+    -- | Whether or not the feature toggle is enabled.
+    m Bool
 tryIsEnabled feature context = do
     config <- asks getUnleashConfig
     maybeState <- liftIO . tryReadMVar $ config.state
@@ -143,17 +173,29 @@ tryIsEnabled feature context = do
             pure enabled
         Nothing -> pure False
 
--- Gets a variant
--- Blocks until first feature toggle set is received
-getVariant :: (HasUnleash r, MonadReader r m, MonadIO m) => Text -> Context -> m VariantResponse
+-- | Get a variant. Blocks until first feature toggle set is received.
+getVariant ::
+    (HasUnleash r, MonadReader r m, MonadIO m) =>
+    -- | Feature toggle name.
+    Text ->
+    -- | Client context.
+    Context ->
+    -- | Variant.
+    m VariantResponse
 getVariant feature context = do
     config <- asks getUnleashConfig
     state <- liftIO . readMVar $ config.state
     featureGetVariant state feature context
 
--- Gets a variant
--- Returns an empty variant until first toggle set is received
-tryGetVariant :: (HasUnleash r, MonadReader r m, MonadIO m) => Text -> Context -> m VariantResponse
+-- | Get a variant. Returns an empty variant until first toggle set is received.
+tryGetVariant ::
+    (HasUnleash r, MonadReader r m, MonadIO m) =>
+    -- | Feature toggle name.
+    Text ->
+    -- | Client context.
+    Context ->
+    -- | Variant.
+    m VariantResponse
 tryGetVariant feature context = do
     config <- asks getUnleashConfig
     maybeState <- liftIO . tryReadMVar $ config.state

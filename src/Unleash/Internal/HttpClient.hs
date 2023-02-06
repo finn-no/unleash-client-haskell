@@ -1,5 +1,9 @@
--- Copyright © FINN.no AS, Inc. All rights reserved.
-
+{- |
+Module      : Unleash.Internal.HttpClient
+Copyright   : Copyright © FINN.no AS, Inc. All rights reserved.
+License     : MIT
+Stability   : experimental
+-}
 module Unleash.Internal.HttpClient (
     getAllClientFeatures,
     register,
