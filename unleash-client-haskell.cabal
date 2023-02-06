@@ -2,7 +2,18 @@ cabal-version: 3.4
 
 name: unleash-client-haskell
 version: 0.4.0
-description: Please see README.md
+description:
+    This is an [Unleash](https://www.getunleash.io/) client SDK for Haskell.
+
+    'Unleash.Client' provides a stateful HTTP client with functions and types for:
+
+        - Client configuration
+        - Client registration
+        - Fetching feature toggles
+        - Fetching variants
+        - Sending metrics
+
+    See [the source repo](https://github.com/finn-no/unleash-client-haskell) for more information and example usage.
 author: FINN.no
 copyright: Copyright © FINN.no AS, Inc. All rights reserved.
 extra-source-files:
