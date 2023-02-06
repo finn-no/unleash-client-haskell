@@ -23,7 +23,7 @@ import Paths_unleash_client_haskell (version)
 import Servant.API (Accept (contentTypes), Get, Header, JSON, MimeRender (mimeRender), NoContent, PostNoContent, ReqBody, type (:<|>) (..), type (:>))
 import Servant.Client (ClientEnv, ClientError, client, runClientM)
 import Unleash.Internal.DomainTypes (Features, fromJsonFeatures, supportedStrategies)
-import Unleash.Internal.JsonTypes (FullMetricBucket (..), FullMetricsPayload (..), FullRegisterPayload (..), MetricsPayload, RegisterPayload, YesAndNoes (..))
+import Unleash.Internal.JsonTypes (FullMetricsBucket (..), FullMetricsPayload (..), FullRegisterPayload (..), MetricsPayload, RegisterPayload, YesAndNoes (..))
 import qualified Unleash.Internal.JsonTypes as UJT
 
 type Register = "api" :> "client" :> "register" :> Header "Authorization" Text :> Header "Content-Type" Text :> ReqBody '[CustomJSON] FullRegisterPayload :> PostNoContent
@@ -77,7 +77,7 @@ sendMetrics clientEnv apiKey metricsPayload = do
                 { appName = metricsPayload.appName,
                   instanceId = metricsPayload.instanceId,
                   bucket =
-                    FullMetricBucket
+                    FullMetricsBucket
                         { start = metricsPayload.start,
                           stop = metricsPayload.stop,
                           toggles = makeMapOfYesAndNoes metricsPayload.toggles
