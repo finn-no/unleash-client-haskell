@@ -62,7 +62,7 @@ library
         servant-client,
         text,
         time,
-        unleash-client-haskell-core,
+        unleash-client-haskell-core ==0.8.6,
 
 executable example
     import: all
