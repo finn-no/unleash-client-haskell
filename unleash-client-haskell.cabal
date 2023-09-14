@@ -21,6 +21,7 @@ maintainer: [email protected]
 license: MIT
 copyright: Copyright © FINN.no AS, Inc. All rights reserved.
 extra-source-files:
+    CHANGELOG.md
     README.md
 
 common all
