@@ -1,3 +1,12 @@
+## <small>0.4.7 (2023-09-14)</small>
+
+* Add CHANGELOG.md ([8bfd48b](https://github.com/finn-no/unleash-client-haskell/commit/8bfd48b))
+* Don't do -O2 ([eb8850b](https://github.com/finn-no/unleash-client-haskell/commit/eb8850b))
+* Set version to 0.4.7 ([20b23d9](https://github.com/finn-no/unleash-client-haskell/commit/20b23d9))
+* unleash-client-haskell-core: 0.8.9 ([997d8e3](https://github.com/finn-no/unleash-client-haskell/commit/997d8e3))
+
+
+
 ## <small>0.4.6 (2023-09-14)</small>
 
 * Downgrade Cabal to 3.0 ([cf24d8b](https://github.com/finn-no/unleash-client-haskell/commit/cf24d8b))
