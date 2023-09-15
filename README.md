@@ -24,8 +24,8 @@ nix-build
 
 ## Maintainers
 
+- [Even Brenden](mailto:uch@anythingexternal.com)
 - [Eirik Meland](mailto:eirik.meland@gmail.com)
-- [Even Brenden](mailto:evenbrenden@gmail.com)
 
 ## Dependencies
 
