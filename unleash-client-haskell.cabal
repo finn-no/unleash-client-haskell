@@ -17,6 +17,7 @@ description:
     See [the source repo](https://github.com/finn-no/unleash-client-haskell) for more information and example usage.
 category: Web
 author: FINN.no
+homepage: https://github.com/finn-no/unleash-client-haskell
 maintainer: See README.md
 license: MIT
 copyright: Copyright © FINN.no AS, Inc. All rights reserved.
