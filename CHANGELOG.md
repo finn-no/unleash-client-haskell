@@ -1,3 +1,15 @@
+## <small>0.4.8 (2023-09-14)</small>
+
+* Add homepage ([9c6d21c](https://github.com/finn-no/unleash-client-haskell/commit/9c6d21c))
+* Move CHANGELOG.md to extra-doc-files ([bf6eb71](https://github.com/finn-no/unleash-client-haskell/commit/bf6eb71))
+* Update all and track nixos-23.05 ([c5e8fa4](https://github.com/finn-no/unleash-client-haskell/commit/c5e8fa4))
+* Update CHANGELOG.md ([fc5980f](https://github.com/finn-no/unleash-client-haskell/commit/fc5980f))
+* Update e-mail address ([903eeeb](https://github.com/finn-no/unleash-client-haskell/commit/903eeeb))
+* Update README ([f48a431](https://github.com/finn-no/unleash-client-haskell/commit/f48a431))
+* Update README ([564ede4](https://github.com/finn-no/unleash-client-haskell/commit/564ede4))
+
+
+
 ## <small>0.4.7 (2023-09-14)</small>
 
 * Add CHANGELOG.md ([8bfd48b](https://github.com/finn-no/unleash-client-haskell/commit/8bfd48b))
