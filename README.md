@@ -16,6 +16,8 @@ You'll need to spawn threads and handle errors yourself. This is demonstrated in
 
 See [unleash-client-haskell-core](https://github.com/finn-no/unleash-client-haskell-core) for a bare-bones feature toggle evaluation library.
 
+Available on [Hackage](https://hackage.haskell.org/package/unleash-client-haskell-0.4.7).
+
 ## Build
 
 ```
