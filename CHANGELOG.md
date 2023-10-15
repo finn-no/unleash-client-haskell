@@ -1,4 +1,4 @@
-## <small>0.4.8 (2023-09-14)</small>
+## <small>0.5.0 (2023-10-15)</small>
 
 * Add homepage ([9c6d21c](https://github.com/finn-no/unleash-client-haskell/commit/9c6d21c))
 * Move CHANGELOG.md to extra-doc-files ([bf6eb71](https://github.com/finn-no/unleash-client-haskell/commit/bf6eb71))
