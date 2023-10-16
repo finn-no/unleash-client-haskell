@@ -1,3 +1,10 @@
+## <small>0.6.0 (2023-10-16)</small>
+
+* Set version to 0.6.0 ([925b4f6](https://github.com/finn-no/unleash-client-haskell/commit/925b4f6))
+* Track nixpkgs-unstable ([5ad3c6d](https://github.com/finn-no/unleash-client-haskell/commit/5ad3c6d))
+
+
+
 ## <small>0.5.0 (2023-10-15)</small>
 
 * Add homepage ([9c6d21c](https://github.com/finn-no/unleash-client-haskell/commit/9c6d21c))
