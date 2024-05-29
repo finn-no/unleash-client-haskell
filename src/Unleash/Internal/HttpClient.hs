@@ -22,7 +22,8 @@ import qualified Network.HTTP.Media as M
 import Paths_unleash_client_haskell (version)
 import Servant.API (Accept (contentTypes), Get, Header, JSON, MimeRender (mimeRender), NoContent, PostNoContent, ReqBody, type (:<|>) (..), type (:>))
 import Servant.Client (ClientEnv, ClientError, client, runClientM)
-import Unleash.Internal.DomainTypes (Features, fromJsonFeatures, StrategyEvaluator)
+import Unleash (Features, StrategyEvaluator)
+import Unleash.Internal.DomainTypes (fromJsonFeatures)
 import Unleash.Internal.JsonTypes (FullMetricsBucket (..), FullMetricsPayload (..), FullRegisterPayload (..), MetricsPayload, RegisterPayload, YesAndNoes (..))
 import qualified Unleash.Internal.JsonTypes as UJT
 
