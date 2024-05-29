@@ -22,7 +22,7 @@ import qualified Network.HTTP.Media as M
 import Paths_unleash_client_haskell (version)
 import Servant.API (Accept (contentTypes), Get, Header, JSON, MimeRender (mimeRender), NoContent, PostNoContent, ReqBody, type (:<|>) (..), type (:>))
 import Servant.Client (ClientEnv, ClientError, client, runClientM)
-import Unleash.Internal.DomainTypes (Features, fromJsonFeatures, supportedStrategies)
+import Unleash.Internal.DomainTypes (Features, fromJsonFeatures, StrategyEvaluator)
 import Unleash.Internal.JsonTypes (FullMetricsBucket (..), FullMetricsPayload (..), FullRegisterPayload (..), MetricsPayload, RegisterPayload, YesAndNoes (..))
 import qualified Unleash.Internal.JsonTypes as UJT
 
@@ -56,16 +56,16 @@ register clientEnv apiKey registerPayload = do
                 { appName = registerPayload.appName,
                   instanceId = registerPayload.instanceId,
                   sdkVersion = "unleash-client-haskell:" <> (T.pack . showVersion) version,
-                  strategies = supportedStrategies,
+                  strategies = registerPayload.strategies,
                   started = registerPayload.started,
                   interval = registerPayload.intervalSeconds * 1000
                 }
     liftIO $ runClientM (register' apiKey (Just "application/json") fullRegisterPayload) clientEnv
 
-getAllClientFeatures :: MonadIO m => ClientEnv -> Maybe ApiKey -> m (Either ClientError Features)
-getAllClientFeatures clientEnv apiKey = do
+getAllClientFeatures :: MonadIO m => ClientEnv -> StrategyEvaluator -> Maybe ApiKey -> m (Either ClientError Features)
+getAllClientFeatures clientEnv strategyEvaluator apiKey = do
     eitherFeatures <- liftIO $ runClientM (getAllClientFeatures' apiKey) clientEnv
-    pure $ fromJsonFeatures <$> eitherFeatures
+    pure $ fromJsonFeatures strategyEvaluator <$> eitherFeatures
 
 sendMetrics :: MonadIO m => ClientEnv -> Maybe ApiKey -> MetricsPayload -> m (Either ClientError NoContent)
 sendMetrics clientEnv apiKey metricsPayload = do

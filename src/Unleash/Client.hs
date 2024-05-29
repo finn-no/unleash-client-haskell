@@ -13,7 +13,9 @@ module Unleash.Client (
     UnleashConfig (..),
     HasUnleash (..),
     registerClient,
+    registerClientCustomStrategies,
     pollToggles,
+    pollTogglesCustomStrategies,
     pushMetrics,
     isEnabled,
     tryIsEnabled,
@@ -34,7 +36,9 @@ import Data.Time (UTCTime, getCurrentTime)
 import Network.HTTP.Client.TLS (newTlsManager)
 import Servant.Client (BaseUrl, ClientEnv, ClientError, mkClientEnv)
 import Unleash (Context (..), Features, MetricsPayload (..), RegisterPayload (..), VariantResponse (..), emptyContext, emptyVariantResponse, featureGetVariant, featureIsEnabled)
+import Unleash.Internal.DomainTypes (StrategyEvaluator, defaultStrategyEvaluator, defaultSupportedStrategies)
 import Unleash.Internal.HttpClient (getAllClientFeatures, register, sendMetrics)
+import Unleash.Internal.JsonTypes (SupportedStrategies)
 
 -- | Smart constructor for Unleash client configuration. Initializes the mutable variables properly.
 makeUnleashConfig ::
@@ -94,9 +98,13 @@ data UnleashConfig = UnleashConfig
 class HasUnleash r where
     getUnleashConfig :: r -> UnleashConfig
 
--- | Register client for the Unleash server. Call this on application startup before calling the state poller and metrics pusher functions.
+-- | Register client for the Unleash server with default strategies. Call this on application startup before calling the state poller and metrics pusher functions.
 registerClient :: (HasUnleash r, MonadReader r m, MonadIO m) => m (Either ClientError ())
-registerClient = do
+registerClient = registerClientCustomStrategies defaultSupportedStrategies
+
+-- | Register client for the Unleash server. Call this on application startup before calling the state poller and metrics pusher functions.
+registerClientCustomStrategies :: (HasUnleash r, MonadReader r m, MonadIO m) => SupportedStrategies -> m (Either ClientError ())
+registerClientCustomStrategies supportedStrategies = do
     config <- asks getUnleashConfig
     now <- liftIO getCurrentTime
     let registrationPayload :: RegisterPayload
@@ -104,16 +112,21 @@ registerClient = do
             RegisterPayload
                 { appName = config.applicationName,
                   instanceId = config.instanceId,
+                  strategies = supportedStrategies,
                   started = now,
                   intervalSeconds = config.metricsPushIntervalInSeconds
                 }
     void <$> register config.httpClientEnvironment config.apiKey registrationPayload
 
--- | Fetch the most recent feature toggle set from the Unleash server. Meant to be run every statePollIntervalInSeconds. Non-blocking.
+-- | Fetch the most recent feature toggle set from the Unleash server. Uses the default strategy evaluator. Meant to be run every statePollIntervalInSeconds. Non-blocking.
 pollToggles :: (HasUnleash r, MonadReader r m, MonadIO m) => m (Either ClientError ())
-pollToggles = do
+pollToggles = pollTogglesCustomStrategies defaultStrategyEvaluator
+
+-- | Fetch the most recent feature toggle set from the Unleash server. Meant to be run every statePollIntervalInSeconds. Non-blocking.
+pollTogglesCustomStrategies :: (HasUnleash r, MonadReader r m, MonadIO m) => StrategyEvaluator -> m (Either ClientError ())
+pollTogglesCustomStrategies strategyEvaluator = do
     config <- asks getUnleashConfig
-    eitherFeatures <- getAllClientFeatures config.httpClientEnvironment config.apiKey
+    eitherFeatures <- getAllClientFeatures config.httpClientEnvironment strategyEvaluator config.apiKey
     either (const $ pure ()) (updateState config.state) eitherFeatures
     pure . void $ eitherFeatures
     where
