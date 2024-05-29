@@ -22,6 +22,7 @@ module Unleash.Client (
     getVariant,
     tryGetVariant,
     -- Re-exports
+    -- TODO Add whatever is need for custom strategies
     Context (..),
     emptyContext,
     VariantResponse (..),
