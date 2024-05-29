@@ -123,6 +123,7 @@ registerClientCustomStrategies supportedStrategies = do
 pollToggles :: (HasUnleash r, MonadReader r m, MonadIO m) => m (Either ClientError ())
 pollToggles = pollTogglesCustomStrategies defaultStrategyEvaluator
 
+-- TODO Apply default strategies implicitly (so that the strategy evaluator argument only handles extra custom strategies)
 -- | Fetch the most recent feature toggle set from the Unleash server. Meant to be run every statePollIntervalInSeconds. Non-blocking.
 pollTogglesCustomStrategies :: (HasUnleash r, MonadReader r m, MonadIO m) => StrategyEvaluator -> m (Either ClientError ())
 pollTogglesCustomStrategies strategyEvaluator = do
