@@ -8,7 +8,7 @@
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     unleash-client-haskell-core.url =
-      "github:finn-no/unleash-client-haskell-core?ref=7ebc80f9fdc779c61747528a1e7d01b229c34dfa";
+      "github:finn-no/unleash-client-haskell-core?ref=46b943a9fb6088f54f8905fd69f687a10a024cf4";
   };
   outputs = { self, nixpkgs, flake-compat, flake-utils, unleash-client-haskell-core }:
     flake-utils.lib.eachDefaultSystem (system:
