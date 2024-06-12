@@ -16,7 +16,9 @@ module Unleash.Client (
     pollToggles,
     pushMetrics,
     isEnabled,
+    isEnabledWithContext,
     tryIsEnabled,
+    tryIsEnabledWithContext,
     getVariant,
     tryGetVariant,
     -- Re-exports
@@ -144,10 +146,19 @@ isEnabled ::
     -- | Feature toggle name.
     Text ->
     -- | Client context.
+    m Bool
+isEnabled feature = isEnabledWithContext feature emptyContext
+
+-- | Check if a feature is enabled or not. Blocks until first feature toggle set is received. Blocks if the mutable metrics variables are empty.
+isEnabledWithContext ::
+    (HasUnleash r, MonadReader r m, MonadIO m) =>
+    -- | Feature toggle name.
+    Text ->
+    -- | Client context.
     Context ->
     -- | Whether or not the feature toggle is enabled.
     m Bool
-isEnabled feature context = do
+isEnabledWithContext feature context = do
     config <- asks getUnleashConfig
     state <- liftIO . readMVar $ config.state
     enabled <- featureIsEnabled state feature context
@@ -160,10 +171,19 @@ tryIsEnabled ::
     -- | Feature toggle name.
     Text ->
     -- | Client context.
+    m Bool
+tryIsEnabled feature = tryIsEnabledWithContext feature emptyContext
+
+-- | Check if a feature is enabled or not. Returns false for all toggles until first toggle set is received. Blocks if the mutable metrics variables are empty.
+tryIsEnabledWithContext ::
+    (HasUnleash r, MonadReader r m, MonadIO m) =>
+    -- | Feature toggle name.
+    Text ->
+    -- | Client context.
     Context ->
     -- | Whether or not the feature toggle is enabled.
     m Bool
-tryIsEnabled feature context = do
+tryIsEnabledWithContext feature context = do
     config <- asks getUnleashConfig
     maybeState <- liftIO . tryReadMVar $ config.state
     case maybeState of
