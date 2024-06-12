@@ -85,4 +85,3 @@ executable example
         servant-client,
         text,
         unleash-client-haskell,
-        unleash-client-haskell-core,

@@ -18,7 +18,6 @@ import qualified Data.Text as T
 import Data.Void (Void)
 import Servant.Client (BaseUrl (BaseUrl), Scheme (Http))
 import System.Exit (die)
-import Unleash (emptyContext)
 import Unleash.Client (
     HasUnleash (..),
     UnleashConfig (..),
@@ -60,7 +59,7 @@ program = do
 application :: Program Void
 application =
     forever do
-        enabled <- isEnabled featureToggle emptyContext
+        enabled <- isEnabled featureToggle
         liftIO . putStrLn $ T.unpack featureToggle <> " is " <> (if enabled then "enabled" else "disabled")
         liftIO . threadDelay $ 2 * 1000 * 1000
 
