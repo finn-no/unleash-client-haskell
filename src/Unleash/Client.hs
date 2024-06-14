@@ -13,7 +13,9 @@ module Unleash.Client (
     UnleashConfig (..),
     HasUnleash (..),
     registerClient,
+    registerClientWithCustomStrategies,
     pollToggles,
+    pollTogglesWithCustomStrategies,
     pushMetrics,
     isEnabled,
     tryIsEnabled,
@@ -22,6 +24,10 @@ module Unleash.Client (
     -- Re-exports
     Context (..),
     emptyContext,
+    FeatureToggleName,
+    Strategy (..),
+    StrategyEvaluator,
+    SupportedStrategies,
     VariantResponse (..),
 ) where
 
@@ -33,7 +39,23 @@ import Data.Text (Text)
 import Data.Time (UTCTime, getCurrentTime)
 import Network.HTTP.Client.TLS (newTlsManager)
 import Servant.Client (BaseUrl, ClientEnv, ClientError, mkClientEnv)
-import Unleash (Context (..), Features, MetricsPayload (..), RegisterPayload (..), VariantResponse (..), emptyContext, emptyVariantResponse, featureGetVariant, featureIsEnabled)
+import Unleash (
+    Context (..),
+    FeatureToggleName,
+    Features,
+    MetricsPayload (..),
+    RegisterPayload (..),
+    Strategy (..),
+    StrategyEvaluator,
+    SupportedStrategies,
+    VariantResponse (..),
+    defaultStrategyEvaluator,
+    defaultSupportedStrategies,
+    emptyContext,
+    emptyVariantResponse,
+    featureGetVariant,
+    featureIsEnabled,
+ )
 import Unleash.Internal.HttpClient (getAllClientFeatures, register, sendMetrics)
 
 -- | Smart constructor for Unleash client configuration. Initializes the mutable variables properly.
@@ -96,7 +118,11 @@ class HasUnleash r where
 
 -- | Register client for the Unleash server. Call this on application startup before calling the state poller and metrics pusher functions.
 registerClient :: (HasUnleash r, MonadReader r m, MonadIO m) => m (Either ClientError ())
-registerClient = do
+registerClient = registerClientWithCustomStrategies defaultSupportedStrategies
+
+-- | Register client for the Unleash server. Custom strategies are added to default strategies. Call this on application startup before calling the state poller and metrics pusher functions.
+registerClientWithCustomStrategies :: (HasUnleash r, MonadReader r m, MonadIO m) => SupportedStrategies -> m (Either ClientError ())
+registerClientWithCustomStrategies customSupportedStrategies = do
     config <- asks getUnleashConfig
     now <- liftIO getCurrentTime
     let registrationPayload :: RegisterPayload
@@ -104,6 +130,7 @@ registerClient = do
             RegisterPayload
                 { appName = config.applicationName,
                   instanceId = config.instanceId,
+                  strategies = defaultSupportedStrategies <> customSupportedStrategies,
                   started = now,
                   intervalSeconds = config.metricsPushIntervalInSeconds
                 }
@@ -111,15 +138,27 @@ registerClient = do
 
 -- | Fetch the most recent feature toggle set from the Unleash server. Meant to be run every statePollIntervalInSeconds. Non-blocking.
 pollToggles :: (HasUnleash r, MonadReader r m, MonadIO m) => m (Either ClientError ())
-pollToggles = do
+pollToggles = pollTogglesWithCustomStrategies defaultStrategyEvaluator
+
+-- | Fetch the most recent feature toggle set from the Unleash server. Custom strategies are added to default strategies. Meant to be run every statePollIntervalInSeconds. Non-blocking.
+pollTogglesWithCustomStrategies :: (HasUnleash r, MonadReader r m, MonadIO m) => StrategyEvaluator -> m (Either ClientError ())
+pollTogglesWithCustomStrategies customStrategyEvaluator = do
     config <- asks getUnleashConfig
-    eitherFeatures <- getAllClientFeatures config.httpClientEnvironment config.apiKey
+    eitherFeatures <- getAllClientFeatures config.httpClientEnvironment strategyEvaluator config.apiKey
     either (const $ pure ()) (updateState config.state) eitherFeatures
     pure . void $ eitherFeatures
     where
+        strategyEvaluator :: StrategyEvaluator
+        strategyEvaluator = withCustomStrategyEvaluator customStrategyEvaluator
         updateState state value = do
             isUpdated <- liftIO $ tryPutMVar state value
             liftIO . unless isUpdated . void $ swapMVar state value
+
+withCustomStrategyEvaluator :: StrategyEvaluator -> StrategyEvaluator
+withCustomStrategyEvaluator customStrategyEvaluator featureToggleName jsonStrategy ctx = do
+    defaultResult <- defaultStrategyEvaluator featureToggleName jsonStrategy ctx
+    customResult <- customStrategyEvaluator featureToggleName jsonStrategy ctx
+    pure $ defaultResult || customResult
 
 -- | Push metrics to the Unleash server. Meant to be run every metricsPushIntervalInSeconds. Blocks if the mutable metrics variables are empty.
 pushMetrics :: (HasUnleash r, MonadReader r m, MonadIO m) => m (Either ClientError ())
