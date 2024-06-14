@@ -62,7 +62,7 @@ import Unleash.Internal.HttpClient (getAllClientFeatures, register, sendMetrics)
 
 -- | Smart constructor for Unleash client configuration. Initializes the mutable variables properly.
 makeUnleashConfig ::
-    MonadIO m =>
+    (MonadIO m) =>
     -- | Application name.
     Text ->
     -- | Instance identifier.

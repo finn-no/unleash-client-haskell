@@ -47,10 +47,10 @@ instance Accept CustomJSON where
         "application" M.// "json"
             NE.:| ["application" M.// "json"]
 
-instance {-# OVERLAPPABLE #-} ToJSON a => MimeRender CustomJSON a where
+instance {-# OVERLAPPABLE #-} (ToJSON a) => MimeRender CustomJSON a where
     mimeRender _ = encode
 
-register :: MonadIO m => ClientEnv -> Maybe ApiKey -> RegisterPayload -> m (Either ClientError NoContent)
+register :: (MonadIO m) => ClientEnv -> Maybe ApiKey -> RegisterPayload -> m (Either ClientError NoContent)
 register clientEnv apiKey registerPayload = do
     let fullRegisterPayload =
             FullRegisterPayload
@@ -63,12 +63,12 @@ register clientEnv apiKey registerPayload = do
                 }
     liftIO $ runClientM (register' apiKey (Just "application/json") fullRegisterPayload) clientEnv
 
-getAllClientFeatures :: MonadIO m => ClientEnv -> StrategyEvaluator -> Maybe ApiKey -> m (Either ClientError Features)
+getAllClientFeatures :: (MonadIO m) => ClientEnv -> StrategyEvaluator -> Maybe ApiKey -> m (Either ClientError Features)
 getAllClientFeatures clientEnv strategyEvaluator apiKey = do
     eitherFeatures <- liftIO $ runClientM (getAllClientFeatures' apiKey) clientEnv
     pure $ fromJsonFeatures strategyEvaluator <$> eitherFeatures
 
-sendMetrics :: MonadIO m => ClientEnv -> Maybe ApiKey -> MetricsPayload -> m (Either ClientError NoContent)
+sendMetrics :: (MonadIO m) => ClientEnv -> Maybe ApiKey -> MetricsPayload -> m (Either ClientError NoContent)
 sendMetrics clientEnv apiKey metricsPayload = do
     liftIO $ runClientM (sendMetrics' apiKey fullMetricsPayload) clientEnv
     where
