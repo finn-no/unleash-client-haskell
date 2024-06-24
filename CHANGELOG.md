@@ -1,3 +1,17 @@
+## <small>0.7.0 (2024-06-24)</small>
+
+* Format all ([0910331](https://github.com/finn-no/unleash-client-haskell/commit/0910331))
+* Reformat flake.nix ([42cd35a](https://github.com/finn-no/unleash-client-haskell/commit/42cd35a))
+* Relax mtl and servant-* constraints ([82f3e1f](https://github.com/finn-no/unleash-client-haskell/commit/82f3e1f))
+* Simplify isEnabled and add isEnabledWithContext ([6d67d38](https://github.com/finn-no/unleash-client-haskell/commit/6d67d38))
+* Support custom strategies (#12) ([bf56170](https://github.com/finn-no/unleash-client-haskell/commit/bf56170)), closes [#12](https://github.com/finn-no/unleash-client-haskell/issues/12)
+* unleash-client-haskell-core: 0.11.0 ([1685750](https://github.com/finn-no/unleash-client-haskell/commit/1685750))
+* Update flake-compat ([4fcfc9a](https://github.com/finn-no/unleash-client-haskell/commit/4fcfc9a))
+* Update nixpkgs ([0498877](https://github.com/finn-no/unleash-client-haskell/commit/0498877))
+* Update unleash-client-haskell-core ([f147f09](https://github.com/finn-no/unleash-client-haskell/commit/f147f09))
+
+
+
 ## <small>0.6.0 (2023-10-16)</small>
 
 * Set version to 0.6.0 ([925b4f6](https://github.com/finn-no/unleash-client-haskell/commit/925b4f6))
