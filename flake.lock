@@ -145,16 +145,16 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1718347030,
-        "narHash": "sha256-o69FeiDs2y0aQMCPZ6LHqcpk6ndXcBDx8DC16XEA/0g=",
+        "lastModified": 1719209150,
+        "narHash": "sha256-aOsmFR9LeLZnbnT9+PmkjM36g5wogkencAW1RPw+seg=",
         "owner": "finn-no",
         "repo": "unleash-client-haskell-core",
-        "rev": "d8555bacaacc8be89c016a78f7ce77d2ae68b75c",
+        "rev": "4a29bb8c2e5374d81c98cba62139147ea3d82cbc",
         "type": "github"
       },
       "original": {
         "owner": "finn-no",
-        "ref": "d8555bacaacc8be89c016a78f7ce77d2ae68b75c",
+        "ref": "4a29bb8c2e5374d81c98cba62139147ea3d82cbc",
         "repo": "unleash-client-haskell-core",
         "type": "github"
       }
