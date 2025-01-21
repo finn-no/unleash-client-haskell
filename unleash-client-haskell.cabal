@@ -64,7 +64,7 @@ library
   autogen-modules: Paths_unleash_client_haskell
   hs-source-dirs:  src
   build-depends:
-    , aeson                        >=2.0.3  && <2.2
+    , aeson                        >=2.0.3  && <2.3
     , base                         >=4.7    && <5
     , containers                   >=0.6.4  && <0.7
     , http-client-tls              >=0.3.6  && <0.4
@@ -72,7 +72,7 @@ library
     , mtl                          >=2.2.2  && <2.4
     , servant                      >=0.19.1 && <0.21
     , servant-client               >=0.19   && <0.21
-    , text                         >=1.2.5  && <2.1
+    , text                         >=1.2.5  && <2.2
     , time                         >=1.9.3  && <1.13
     , unleash-client-haskell-core  >=0.11.0 && <0.12
 
