@@ -1,3 +1,14 @@
+## <small>0.8.0 (2025-05-02)</small>
+
+* Add source-repository ([116c725](https://github.com/finn-no/unleash-client-haskell/commit/116c725))
+* Format Cabal file ([9ff1502](https://github.com/finn-no/unleash-client-haskell/commit/9ff1502))
+* unleash-client-haskell-core: 0.12.0 ([f99a7ab](https://github.com/finn-no/unleash-client-haskell/commit/f99a7ab))
+* Update all Flake inputs ([605fe74](https://github.com/finn-no/unleash-client-haskell/commit/605fe74))
+* Update bounds for aeson and text ([6b1777a](https://github.com/finn-no/unleash-client-haskell/commit/6b1777a))
+* Update nixpkgs ([8f6062d](https://github.com/finn-no/unleash-client-haskell/commit/8f6062d))
+
+
+
 ## <small>0.7.0 (2024-06-24)</small>
 
 * Format all ([0910331](https://github.com/finn-no/unleash-client-haskell/commit/0910331))
