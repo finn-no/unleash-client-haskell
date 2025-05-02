@@ -18,6 +18,8 @@ See [unleash-client-haskell-core](https://github.com/finn-no/unleash-client-hask
 
 Available on [Hackage](https://hackage.haskell.org/package/unleash-client-haskell).
 
+This project is currently unmaintained.
+
 ## Build
 
 ```
