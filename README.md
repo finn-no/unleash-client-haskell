@@ -24,11 +24,6 @@ Available on [Hackage](https://hackage.haskell.org/package/unleash-client-haskel
 nix-build
 ```
 
-## Maintainers
-
-- [Even Brenden](mailto:uch@anythingexternal.com)
-- [Eirik Meland](mailto:eirik.meland@gmail.com)
-
 ## Dependencies
 
 - aeson (BSD-3-Clause)
