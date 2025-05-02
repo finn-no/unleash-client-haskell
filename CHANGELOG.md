@@ -1,3 +1,10 @@
+## <small>0.8.1 (2025-05-02)</small>
+
+* Remove maintainers section ([52ccba7](https://github.com/finn-no/unleash-client-haskell/commit/52ccba7))
+* Update README.md ([3c2ba7b](https://github.com/finn-no/unleash-client-haskell/commit/3c2ba7b))
+
+
+
 ## <small>0.8.0 (2025-05-02)</small>
 
 * Add source-repository ([116c725](https://github.com/finn-no/unleash-client-haskell/commit/116c725))
